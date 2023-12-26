@@ -1,10 +1,12 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, initializeAuth, getReactNativePersistence } from "firebase/auth";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getDatabase } from "firebase/database";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBXjqB6eGGEfjdLBPiDfJD4OXuNdzsqZKU",
     authDomain: "smith-air-clone.firebaseapp.com",
+    databaseURL: "https://smith-air-clone-default-rtdb.firebaseio.com/",
     projectId: "smith-air-clone",
     storageBucket: "smith-air-clone.appspot.com",
     messagingSenderId: "475590570831",
@@ -12,6 +14,7 @@ const firebaseConfig = {
 };
 
 export const FIREBASE_APP = initializeApp(firebaseConfig);
+export const FIREBASE_DB = getDatabase(FIREBASE_APP);
 
 export const FIREBASE_AUTH = (() => {
     try {

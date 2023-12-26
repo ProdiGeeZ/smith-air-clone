@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { onAuthStateChanged } from 'firebase/auth';
 import { FIREBASE_AUTH } from './firebaseConfig';
-import { HomeScreen, LoginScreen, ProfileScreen, LoadingComponent } from './src/index';
+import { HomeScreen, LoginScreen, ProfileScreen, Settings, LoadingComponent } from './src/index';
 
 const Stack = createNativeStackNavigator();
 
@@ -34,6 +34,7 @@ const App = () => {
           <>
             <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Overview' }} />
+            <Stack.Screen name="Settings" component={Settings} />
           </>
         ) : (
           <>
