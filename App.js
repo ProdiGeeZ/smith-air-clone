@@ -50,7 +50,7 @@ const App = () => {
 
   return (
     <PaperProvider>
-      <SafeAreaView style={{ flex: 1, paddingTop: StatusBar.currentHeight || 0 }}>
+      <SafeAreaView style={{ flex: 1}}>
         <NavigationContainer>
           {loading ? (
             <LoadingComponent />
