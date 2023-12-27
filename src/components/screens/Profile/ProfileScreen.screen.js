@@ -1,14 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, SafeAreaView, StatusBar } from 'react-native';
-import { getAuth } from 'firebase/auth';
+import { getAuth, signOut } from 'firebase/auth';
 import { getDatabase, ref, onValue } from 'firebase/database';
-import { FIREBASE_DB } from '../../../../firebaseConfig';
-import { Avatar, Card, IconButton, Text, MD3Colors } from 'react-native-paper';
+import { Avatar, Card, IconButton, Text, Portal, Modal, List, Divider } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
 
 
-const ProfileScreen = () => {
+function ProfileCard(props) {
+    return (<View style={styles.mainContainer}>
+        <Card style={styles.profileContainer}>
+            <Card.Content style={styles.contentBox}>
+                <IconButton icon={'cog'} style={styles.iconButton} onPress={props.showModal}></IconButton>
+                <Avatar.Image size={100} source={{
+                    uri: props.profileData.profile_avatar
+                }} style={styles.avatar} elevation={1} />
+                <Text variant={'titleLarge'}>{props.profileData.employee_name}</Text>
+                <Text variant={'titleMedium'}>{props.profileData.job_role}</Text>
+                <Text variant={'titleSmall'}>{props.profileData.location}</Text>
+            </Card.Content>
+        </Card>
+    </View>);
+}
+
+
+
+function ProfileModal(props) {
+    // Using useNavigation to get access to navigation
+    const navigation = useNavigation();
+
+    return (
+        <Portal>
+            <Modal visible={props.visible} onDismiss={props.hideModal} contentContainerStyle={styles.innerContainer} elevation={5}>
+                <Text style={styles.modalTitle}>Menu</Text>
+                <List.Section>
+                    <List.Item title="Edit Profile" left={() => <List.Icon icon="account-edit" />} onPress={() => navigation.navigate('EditProfile')} />
+                    <Divider />
+                    <List.Item title="Settings" left={() => <List.Icon icon="cog-outline" />} onPress={() => navigation.navigate('Settings')} />
+                    <Divider />
+                    <List.Item title="Log Out" left={() => <List.Icon icon="logout" />} onPress={props.logOut} />
+                </List.Section>
+            </Modal>
+        </Portal>
+    );
+}
+
+
+
+const ProfileScreen = ({ onOpenSettings }) => {
     const [profileData, setProfileData] = useState({});
-
+    const [visible, setVisible] = React.useState(false);
+    const auth = getAuth();
     const user = getAuth().currentUser.uid;
     const db = getDatabase();
 
@@ -26,19 +67,19 @@ const ProfileScreen = () => {
         };
     }, [user]);
 
+    const showModal = () => setVisible(true);
+    const hideModal = () => setVisible(false);
+
+    const logOut = () => {
+        signOut(auth)
+            .then(() => console.log('User signed out!'))
+            .catch(error => console.error("Error signing out:", error));
+    };
+
+
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.mainContainer}>
-                <Card style={styles.profileContainer}>
-                    <Card.Content style={styles.contentBox}>
-                        <IconButton icon={'cog-outline'} style={styles.iconButton}></IconButton>
-                        <Avatar.Image size={100} source={{ uri: profileData.avatar ? profileData.avatar : '' }} style={styles.avatar} elevation={1} />
-                        <Text variant={'titleLarge'}>{profileData.employee_name}</Text>
-                        <Text variant={'titleMedium'}>{profileData.job_role}</Text>
-                        <Text variant={'titleSmall'}>{profileData.location}</Text>
-                    </Card.Content>
-                </Card>
-            </View>
+            <ProfileCard profileData={profileData} showModal={showModal}></ProfileCard>
             <Card style={styles.profileContainer}>
                 <Card.Content style={styles.contentBox}>
                     <Text variant={'titleLarge'} style={{ fontWeight: 'bold' }}>Next Scheduled Shift</Text>
@@ -46,6 +87,7 @@ const ProfileScreen = () => {
                     <Text variant={'titleSmall'}>{profileData.location}</Text>
                 </Card.Content>
             </Card>
+            <ProfileModal visible={visible} hideModal={hideModal} logOut={logOut} onOpenSettings={onOpenSettings}></ProfileModal>
         </SafeAreaView>
     );
 };
@@ -54,8 +96,8 @@ export default ProfileScreen;
 
 const styles = StyleSheet.create({
     container: {
-        alignItems: 'center',
         justifyContent: 'center',
+        alignItems: 'center',
         marginTop: StatusBar.currentHeight || 0,
     },
     mainContainer: {
@@ -77,7 +119,7 @@ const styles = StyleSheet.create({
     profileContainer: {
         position: 'relative',
         marginTop: 20,
-        padding: 35,
+        padding: 20,
         alignItems: 'center',
         justifyContent: 'center',
         width: '90%',
@@ -98,17 +140,33 @@ const styles = StyleSheet.create({
         backgroundColor: 'transparent',
     },
     avatar: {
-        backgroundColor: 'none',
-        marginBottom: 20,
+        marginBottom: 10,
         alignSelf: 'center',
         justifyContent: 'center',
-        borderColor: 'transparent',
-        overflow: 'hidden',
     },
     iconButton: {
-        position: 'absolute',
+        position: 'fixed',
         top: -30,
-        right: 0,
+        right: -160,
         margin: 0,
+        padding: 0,
     },
+    innerContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        alignSelf: 'center',
+        justifyContent: 'center',
+        width: '80%',
+        height: '50%',
+        backgroundColor: 'white',
+        padding: 30,
+        borderRadius: 10,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+    }
 });

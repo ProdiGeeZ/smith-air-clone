@@ -1,13 +1,21 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { SafeAreaView, Text, StyleSheet, StatusBar } from 'react-native';
 
 const HomeScreen = () => {
     return (
-        <View>
+        <SafeAreaView style={styles.container}>
             <Text>Welcome to the HomeScreen!</Text>
             <Text>This is a placeholder content.</Text>
-        </View>
+        </SafeAreaView>
     );
 };
 
 export default HomeScreen;
+
+const styles = StyleSheet.create({
+    container: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: StatusBar.currentHeight || 0,
+    }
+});
