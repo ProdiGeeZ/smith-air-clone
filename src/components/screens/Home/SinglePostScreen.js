@@ -1,12 +1,12 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 
-const Announcements = () => {
+const SinglePostScreen = () => {
     return (
         <View>
-            <Text>Announcements</Text>
+            <Text>SinglePostScreen</Text>
         </View>
     )
 }
 
-export default Announcements
+export default SinglePostScreen

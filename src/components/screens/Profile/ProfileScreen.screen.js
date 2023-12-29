@@ -2,171 +2,143 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, SafeAreaView, StatusBar } from 'react-native';
 import { getAuth, signOut } from 'firebase/auth';
 import { getDatabase, ref, onValue } from 'firebase/database';
-import { Avatar, Card, IconButton, Text, Portal, Modal, List, Divider } from 'react-native-paper';
+import { Avatar, IconButton, Text, Portal, Modal, List, Divider, Title } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 
+const ProfileCard = ({ profileData, onShowModal }) => (
+    <View style={styles.profileContainer}>
+        <IconButton icon='cog' style={styles.iconButton} onPress={onShowModal} />
+        <Avatar.Image 
+            size={100} 
+            source={{ uri: profileData.profile_avatar }} 
+            style={styles.avatar} 
+            elevation={1} 
+        />
+        <Title style={styles.userName}>{profileData.employee_name}</Title>
+        <Text style={styles.userRole}>{profileData.job_role}</Text>
+        <Text style={styles.userLocation}>{profileData.location}</Text>
+    </View>
+);
 
-function ProfileCard(props) {
-    return (<View style={styles.mainContainer}>
-        <Card style={styles.profileContainer}>
-            <Card.Content style={styles.contentBox}>
-                <IconButton icon={'cog'} style={styles.iconButton} onPress={props.showModal}></IconButton>
-                <Avatar.Image size={100} source={{
-                    uri: props.profileData.profile_avatar
-                }} style={styles.avatar} elevation={1} />
-                <Text variant={'titleLarge'}>{props.profileData.employee_name}</Text>
-                <Text variant={'titleMedium'}>{props.profileData.job_role}</Text>
-                <Text variant={'titleSmall'}>{props.profileData.location}</Text>
-            </Card.Content>
-        </Card>
-    </View>);
-}
-
-
-
-function ProfileModal(props) {
-    // Using useNavigation to get access to navigation
+const ProfileModal = ({ visible, onHideModal, onLogOut }) => {
     const navigation = useNavigation();
+
+    const handleNavigate = (screenName) => {
+        navigation.navigate(screenName);
+        onHideModal();
+    }
 
     return (
         <Portal>
-            <Modal visible={props.visible} onDismiss={props.hideModal} contentContainerStyle={styles.innerContainer} elevation={5}>
-                <Text style={styles.modalTitle}>Menu</Text>
+            <Modal visible={visible} onDismiss={onHideModal} contentContainerStyle={styles.innerContainer} elevation={5}>
+                <Title style={styles.modalTitle}>Menu</Title>
                 <List.Section>
-                    <List.Item title="Edit Profile" left={() => <List.Icon icon="account-edit" />} onPress={() => navigation.navigate('EditProfile')} />
+                    <List.Item
+                        title="Edit Profile"
+                        left={() => <List.Icon icon="account-edit" />}
+                        onPress={() => handleNavigate('EditProfile')}
+                    />
                     <Divider />
-                    <List.Item title="Settings" left={() => <List.Icon icon="cog-outline" />} onPress={() => navigation.navigate('Settings')} />
+                    <List.Item
+                        title="Settings"
+                        left={() => <List.Icon icon="cog-outline" />}
+                        onPress={() => handleNavigate('Settings')}
+                    />
                     <Divider />
-                    <List.Item title="Log Out" left={() => <List.Icon icon="logout" />} onPress={props.logOut} />
+                    <List.Item
+                        title="Log Out"
+                        left={() => <List.Icon icon="logout" />}
+                        onPress={onLogOut}
+                    />
                 </List.Section>
             </Modal>
         </Portal>
     );
-}
+};
 
-
-
-const ProfileScreen = ({ onOpenSettings }) => {
+const ProfileScreen = () => {
     const [profileData, setProfileData] = useState({});
-    const [visible, setVisible] = React.useState(false);
+    const [visible, setVisible] = useState(false);
     const auth = getAuth();
     const user = getAuth().currentUser.uid;
     const db = getDatabase();
 
     useEffect(() => {
-        let isMounted = true;
         const userRef = ref(db, `employees/${user}`);
-        onValue(userRef, (snapshot) => {
-            if (isMounted) {
-                const data = snapshot.val();
-                setProfileData(data);
-            }
+        return onValue(userRef, (snapshot) => {
+            const data = snapshot.val();
+            setProfileData(data || {});
         });
-        return () => {
-            isMounted = false;
-        };
     }, [user]);
 
-    const showModal = () => setVisible(true);
-    const hideModal = () => setVisible(false);
-
-    const logOut = () => {
-        signOut(auth)
-            .then(() => console.log('User signed out!'))
-            .catch(error => console.error("Error signing out:", error));
+    const handleLogOut = async () => {
+        try {
+            await signOut(auth);
+            console.log('User signed out!');
+        } catch (error) {
+            console.error("Error signing out:", error);
+        }
     };
-
 
     return (
         <SafeAreaView style={styles.container}>
-            <ProfileCard profileData={profileData} showModal={showModal}></ProfileCard>
-            <Card style={styles.profileContainer}>
-                <Card.Content style={styles.contentBox}>
-                    <Text variant={'titleLarge'} style={{ fontWeight: 'bold' }}>Next Scheduled Shift</Text>
-                    <Text variant={'titleLarge'} >{profileData.next_shift}</Text>
-                    <Text variant={'titleSmall'}>{profileData.location}</Text>
-                </Card.Content>
-            </Card>
-            <ProfileModal visible={visible} hideModal={hideModal} logOut={logOut} onOpenSettings={onOpenSettings}></ProfileModal>
+            <ProfileCard 
+                profileData={profileData} 
+                onShowModal={() => setVisible(true)} 
+            />
+            <ProfileModal 
+                visible={visible} 
+                onHideModal={() => setVisible(false)} 
+                onLogOut={handleLogOut} 
+            />
         </SafeAreaView>
     );
 };
 
-export default ProfileScreen;
-
 const styles = StyleSheet.create({
     container: {
-        justifyContent: 'center',
+        flex: 1,
+        backgroundColor: 'white',
         alignItems: 'center',
-        marginTop: StatusBar.currentHeight || 0,
-    },
-    mainContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#265fa5',
-        paddingTop: 20,
-        paddingBottom: 35,
-        shadowColor: "#000",
-        width: '100%',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.3,
-        shadowRadius: 3.84,
-        elevation: 5,
+        paddingTop: StatusBar.currentHeight || 0,
     },
     profileContainer: {
-        position: 'relative',
-        marginTop: 20,
-        padding: 20,
         alignItems: 'center',
-        justifyContent: 'center',
-        width: '90%',
-        borderColor: 'transparent',
-        backgroundColor: '#ffffff',
-    },
-    contentBox: {
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    submitButton: {
-        marginTop: 15,
-        backgroundColor: '#0b4589',
-        width: '50%',
-    },
-    inputFields: {
-        marginTop: 20,
-        backgroundColor: 'transparent',
+        paddingVertical: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
     },
     avatar: {
         marginBottom: 10,
-        alignSelf: 'center',
-        justifyContent: 'center',
     },
     iconButton: {
-        position: 'fixed',
-        top: -30,
-        right: -160,
-        margin: 0,
-        padding: 0,
+        position: 'absolute',
+        top: 20,
+        right: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    },
+    userName: {
+        fontSize: 24,
+        fontWeight: 'bold',
+    },
+    userRole: {
+        fontSize: 18,
+        color: '#666',
+    },
+    userLocation: {
+        fontSize: 16,
+        color: '#888',
     },
     innerContainer: {
-        display: 'flex',
-        alignItems: 'center',
-        alignSelf: 'center',
-        justifyContent: 'center',
-        width: '80%',
-        height: '50%',
         backgroundColor: 'white',
-        padding: 30,
+        padding: 20,
         borderRadius: 10,
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-    }
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
 });
+
+export default ProfileScreen;

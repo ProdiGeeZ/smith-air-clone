@@ -5,11 +5,11 @@ import moment from 'moment';
 import PulsingGradient from '../../base/PulsingGradient';
 import { PostsContext } from '../../base/PostContext'; 
 
-const Social = () => {
+const LatestPosts = () => {
     const { posts, likedPosts, handleLike } = useContext(PostsContext);
     const [refreshing, setRefreshing] = React.useState(false);
 
-    const formattedPosts = posts.filter((post) => post.topic === 'social');
+    const formattedPosts = posts.sort((a, b) => b.timestamp - a.timestamp);
 
     const onRefresh = React.useCallback(() => {
         // Instead of directly calling fetchPosts here, you might want to trigger a refresh in the context
@@ -28,7 +28,7 @@ const Social = () => {
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                 }>
-                <Title style={styles.header}>Social</Title>
+                <Title style={styles.header}>Latest Posts</Title>
                 {formattedPosts.map((post) => (
                     <Card key={post.post_id} style={styles.postContainer}>
                         <View style={styles.postHeader}>
@@ -141,4 +141,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Social;
+export default LatestPosts;

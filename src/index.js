@@ -4,3 +4,6 @@ export { default as ProfileScreen } from './components/screens/Profile/ProfileSc
 export { default as LoadingComponent } from './components/base/LoadingComponent';
 export { default as Settings } from './components/screens/Profile/Settings';
 export { default as EditProfile } from './components/screens/Profile/EditProfile.screen';
+export { default as Notifications } from './components/screens/Home/Notifications';
+export { default as Contacts } from './components/screens/Contacts/Contacts';
+export { default as PulsingGradient } from './components/base/PulsingGradient';

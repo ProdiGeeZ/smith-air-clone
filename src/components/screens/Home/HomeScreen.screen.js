@@ -1,17 +1,25 @@
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import React from 'react';
-import { SafeAreaView, Text, StyleSheet, StatusBar } from 'react-native';
-import Announcements from './Announcements';
+import { SafeAreaView, StyleSheet } from 'react-native';
+import LatestPosts from './LatestPosts';
 import Rota from './Rota';
 import Social from './Social';
 import Posts from './Posts';
+import { PostsProvider } from '../../base/PostContext';
+
 
 const TopTab = createMaterialTopTabNavigator();
 
 const HomeTopTabs = () => {
+
     return (
-        <TopTab.Navigator>
-            <TopTab.Screen name="Recent" component={Announcements} />
+        <TopTab.Navigator
+            screenOptions={{
+                tabBarIndicatorStyle: styles.tabIndicator,
+                tabBarLabelStyle: styles.tabLabel,
+                tabBarStyle: styles.tabBar,
+            }}>
+            <TopTab.Screen name="Recent" component={LatestPosts} />
             <TopTab.Screen name="Rota" component={Rota} />
             <TopTab.Screen name="Social" component={Social} />
             <TopTab.Screen name="Posts" component={Posts} />
@@ -22,8 +30,9 @@ const HomeTopTabs = () => {
 const HomeScreen = () => {
     return (
         <SafeAreaView style={styles.container}>
-            <HomeTopTabs />
-            <Text>Home Screen</Text>
+            <PostsProvider>
+                <HomeTopTabs />
+            </PostsProvider>
         </SafeAreaView>
     );
 };
@@ -33,11 +42,25 @@ export default HomeScreen;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: StatusBar.currentHeight || 0,
+        backgroundColor: '#f7f7f7',
+        width: '100%',
     },
-    topTabNavigator: {
-        flex: 1, 
-        backgroundColor: 'lightblue', 
+    headerText: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        padding: 10,
+        textAlign: 'center',
+        color: '#333',
+    },
+    tabIndicator: {
+        backgroundColor: '#3989f0',
+    },
+    tabLabel: {
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    tabBar: {
+        backgroundColor: 'white',
         shadowColor: "#000",
         shadowOffset: {
             width: 0,
